@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace RATELIMITINGDEMO;
 
@@ -23,8 +24,15 @@ public sealed class RateLimitingMiddleware(
 
             context.Response.StatusCode = 429;
             context.Response.Headers["Retry-After"] = timeWindow.TotalSeconds.ToString();
+            var resposne = new
+            {
+                status = 429,
+                message = "Rate limit exceeded. Please try again later.",
+                success = false,
+            };
 
-            await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(resposne));
             return;
         }
 
