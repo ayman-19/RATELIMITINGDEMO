@@ -1,4 +1,6 @@
-﻿using Microsoft.OpenApi;
+﻿using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi;
 
 namespace RATELIMITINGDEMO;
 
@@ -8,6 +10,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddScoped<RateLimitingMiddleware>();
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter(
+                "FixedPolicy",
+                config =>
+                {
+                    config.Window = TimeSpan.FromSeconds(50);
+                    config.PermitLimit = 5;
+                    config.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    config.QueueLimit = 0;
+                }
+            );
+        });
         builder.Services.AddMemoryCache();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -41,7 +56,8 @@ public class Program
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
-        app.UseMiddleware<RateLimitingMiddleware>();
+        app.UseRateLimiter();
+        //app.UseMiddleware<RateLimitingMiddleware>();
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
