@@ -19,7 +19,7 @@ public sealed class RateLimitingMiddleware(
 
         if (requestCount >= maxRequests)
         {
-            _logger.LogWarning($"🚫 Rate limit exceeded for IP: {clientIp}, Endpoint: {endpoint}");
+            _logger.LogWarning($"Rate limit exceeded for IP: {clientIp}, Endpoint: {endpoint}");
 
             context.Response.StatusCode = 429;
             context.Response.Headers["Retry-After"] = timeWindow.TotalSeconds.ToString();
