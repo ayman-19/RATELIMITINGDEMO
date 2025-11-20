@@ -7,8 +7,8 @@ namespace RATELIMITINGDEMO
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
+            builder.Services.AddScoped<RateLimitingMiddleware>();
+            builder.Services.AddMemoryCache();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc(
@@ -41,8 +41,7 @@ namespace RATELIMITINGDEMO
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
+            app.UseMiddleware<RateLimitingMiddleware>();
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
